@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.nn import functional as F
 from models import SAINT
 
 from data_openml import data_prep_openml,DataSetCatCon
@@ -153,6 +154,9 @@ with torch.no_grad():
         y_reps = reps[:,0,:]
         y_outs = model.mlpfory(y_reps)
         y =  list(chain(*y_gts.tolist()))
+        if opt.task != 'regression':
+            probs = F.softmax(y_outs, dim=-1)
+            y_outs = torch.multinomial(probs, num_samples=1)
         y_hat = list(chain(*y_outs.tolist()))
         all_y += y
         all_y_hat += y_hat

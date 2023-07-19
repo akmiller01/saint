@@ -25,3 +25,11 @@ ols = lm(medianhousevalue~
            longitude, data=houses_data
 )
 summary(ols)
+
+# $ python train.py --dset_id ssp1_ext --task multiclass
+# $ python sample.py --dset_id ssp1_ext --task multiclass
+saint = fread("~/git/saint/outputs/multiclass_ssp1_ext.csv")
+boxplot(saint)
+pred = data.table(table(saint$y, saint$y_hat))
+names(pred) = c("y", "y_hat", "count")
+pred$correct = pred$y == pred$y_hat
