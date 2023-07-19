@@ -172,7 +172,8 @@ best_valid_auroc = 0
 best_valid_accuracy = 0
 best_test_auroc = 0
 best_test_accuracy = 0
-best_valid_rmse = 100000
+best_valid_rmse = 10000000000
+best_test_rmse = 10000000000
 print('Training begins now.')
 for epoch in range(opt.epochs):
     model.train()
