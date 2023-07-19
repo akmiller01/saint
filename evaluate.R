@@ -58,3 +58,9 @@ View(pred)
 saint = fread("~/git/saint/outputs/regression_ssp1_regression.csv")
 plot(saint)
 summary(lm(y~y_hat, data=saint))
+
+# $ python train.py --dset_id ssp1_fts_all --task regression --pretrain
+# $ python sample.py --dset_id ssp1_fts_all --task regression
+saint = fread("~/git/saint/outputs/regression_ssp1_fts_all.csv")
+plot(saint)
+summary(lm(y~y_hat, data=saint))
