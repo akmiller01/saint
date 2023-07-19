@@ -8,7 +8,7 @@ setwd(paste0(wd_base, "saint"))
 
 # $ python train.py --dset_id 44138 --task regression
 # $ python sample.py --dset_id 44138 --task regression
-saint = fread("~/git/saint/output.csv")
+saint = fread("~/git/saint/outputs/regression_44138.csv")
 plot(saint)
 summary(lm(y~y_hat, data=saint))
 

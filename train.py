@@ -14,7 +14,7 @@ import os
 import numpy as np
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--dset_id', required=True, type=int)
+parser.add_argument('--dset_id', required=True, type=str)
 parser.add_argument('--vision_dset', action = 'store_true')
 parser.add_argument('--task', required=True, type=str,choices = ['binary','multiclass','regression'])
 parser.add_argument('--cont_embeddings', default='MLP', type=str,choices = ['MLP','Noemb','pos_singleMLP'])

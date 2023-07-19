@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 bestmodels
-output.csv
+data
+outputs

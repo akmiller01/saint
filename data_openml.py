@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 from torch.utils.data import Dataset
+import os
 
 
 def simple_lapsed_time(text, lapsed):
@@ -42,10 +43,18 @@ def data_split(X,y,nan_mask,indices):
 
 def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
     
-    np.random.seed(seed) 
-    dataset = openml.datasets.get_dataset(ds_id)
+    np.random.seed(seed)
+    try:
+        ds_id = int(ds_id)
+        dataset = openml.datasets.get_dataset(ds_id)
     
-    X, y, categorical_indicator, attribute_names = dataset.get_data(dataset_format="dataframe", target=dataset.default_target_attribute)
+        X, y, categorical_indicator, attribute_names = dataset.get_data(dataset_format="dataframe", target=dataset.default_target_attribute)
+    except ValueError:
+        dataset = pd.read_csv(os.path.join("data", "{}.csv".format(ds_id)))
+
+        y = dataset.pop(dataset.columns[0])
+        X = dataset
+        categorical_indicator = [uniques < 20 for uniques in dataset.apply(pd.Series.nunique).to_list()]
     if ds_id == 42178:
         categorical_indicator = [True, False, True,True,False,True,True,True,True,True,True,True,True,True,True,True,True,False, False]
         tmp = [x if (x != ' ') else '0' for x in X['TotalCharges'].tolist()]

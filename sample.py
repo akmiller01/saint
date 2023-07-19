@@ -14,7 +14,7 @@ import pandas as pd
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--dset_id', required=True, type=int)
+parser.add_argument('--dset_id', required=True, type=str)
 parser.add_argument('--vision_dset', action = 'store_true')
 parser.add_argument('--task', required=True, type=str,choices = ['binary','multiclass','regression'])
 parser.add_argument('--cont_embeddings', default='MLP', type=str,choices = ['MLP','Noemb','pos_singleMLP'])
@@ -164,4 +164,4 @@ out_df = pd.DataFrame(
     }
 )
 
-out_df.to_csv('output.csv', index=False)
+out_df.to_csv('outputs/{}_{}.csv'.format(opt.task, opt.dset_id), index=False)
