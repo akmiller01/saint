@@ -58,6 +58,8 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
         object_dtypes = [dtype == 'O' for dtype in X.dtypes.tolist()]
         categorical_indicator = [a or b for a, b in zip(small_uniques, object_dtypes)]
         categorical_columns = X.columns[categorical_indicator].tolist()
+        for i in range(0, len(categorical_indicator)):
+            print(X.columns[i], ": Categorical" if categorical_indicator[i] else ": Numerical")
         for categorical_column in categorical_columns:
             X[categorical_column] = X[categorical_column].astype('str')
     if ds_id == 42178:

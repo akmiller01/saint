@@ -64,3 +64,19 @@ summary(lm(y~y_hat, data=saint))
 saint = fread("~/git/saint/outputs/regression_ssp1_fts_all.csv")
 plot(saint)
 summary(lm(y~y_hat, data=saint))
+
+self_attention_test = data.frame(x=seq(0, 9.999, 0.001))
+exponential = sample(c(1:nrow(self_attention_test)), size=nrow(self_attention_test)/2)
+self_attention_test$y = (self_attention_test$x * -5) - 10
+self_attention_test$formula = "(x * -5) - 10"
+self_attention_test$y[exponential] = self_attention_test$x[exponential]^2
+self_attention_test$formula[exponential] = "x^2"
+self_attention_test = self_attention_test[,c("y","x","formula")]
+fwrite(self_attention_test, "~/git/saint/data/self_attention_test.csv")
+plot(y~x, data=self_attention_test)
+
+# $ python train.py --dset_id self_attention_test --task regression --attentiontype row
+# $ python sample.py --dset_id self_attention_test --task regression --attentiontype row
+saint = fread("~/git/saint/outputs/regression_self_attention_test.csv")
+plot(saint)
+summary(lm(y~y_hat, data=saint))
