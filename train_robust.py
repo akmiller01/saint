@@ -237,9 +237,12 @@ for epoch in range(opt.epochs):
             model.eval()
             with torch.no_grad():
                 if opt.task in ['binary','multiclass']:
+                    train_accuracy, train_auroc = classification_scores(model, trainloader, device, opt.task,vision_dset)
                     accuracy, auroc = classification_scores(model, validloader, device, opt.task,vision_dset)
                     test_accuracy, test_auroc = classification_scores(model, testloader, device, opt.task,vision_dset)
 
+                    print('[EPOCH %d] TRAIN ACCURACY: %.3f, TRAIN AUROC: %.3f' %
+                        (epoch + 1, train_accuracy,train_auroc ))
                     print('[EPOCH %d] VALID ACCURACY: %.3f, VALID AUROC: %.3f' %
                         (epoch + 1, accuracy,auroc ))
                     print('[EPOCH %d] TEST ACCURACY: %.3f, TEST AUROC: %.3f' %
@@ -261,8 +264,11 @@ for epoch in range(opt.epochs):
                             torch.save(model.state_dict(),'%s/bestmodel.pth' % (modelsave_path))
 
                 else:
+                    train_rmse = mean_sq_error(model, trainloader, device,vision_dset)    
                     valid_rmse = mean_sq_error(model, validloader, device,vision_dset)    
                     test_rmse = mean_sq_error(model, testloader, device,vision_dset)  
+                    print('[EPOCH %d] TRAIN RMSE: %.3f' %
+                        (epoch + 1, train_rmse ))
                     print('[EPOCH %d] VALID RMSE: %.3f' %
                         (epoch + 1, valid_rmse ))
                     print('[EPOCH %d] TEST RMSE: %.3f' %

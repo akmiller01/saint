@@ -85,7 +85,7 @@ plot(y_hat~x,data=saint)
 summary(lm(y~y_hat, data=saint))
 dev.off()
 
-# $ python train.py --dset_id iiasa_unhcr_refugees --task regression --pretrain
+# $ python train.py --dset_id iiasa_unhcr_refugees --task regression
 # $ python sample.py --dset_id iiasa_unhcr_refugees --task regression
 saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_refugees.csv")
 plot(saint)
