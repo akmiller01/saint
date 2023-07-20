@@ -84,3 +84,22 @@ saint = fread("~/git/saint/outputs/regression_self_attention_test.csv")
 plot(y_hat~x,data=saint)
 summary(lm(y~y_hat, data=saint))
 dev.off()
+
+# $ python train.py --dset_id iiasa_unhcr_refugees --task regression --pretrain
+# $ python sample.py --dset_id iiasa_unhcr_refugees --task regression
+saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_refugees.csv")
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+refugee_data = fread("~/git/saint/data/iiasa_unhcr_refugees.csv")
+ols = lm(refugees~
+           Region+
+           year+
+           pop+
+           gdp+
+           urban, data=refugee_data
+)
+summary(ols)
+crd = refugee_data[complete.cases(refugee_data),]
+crd$y_hat = predict.lm(ols, newdata=crd)
+crd$y = crd$refugees
+plot(y_hat~y, data=crd)
