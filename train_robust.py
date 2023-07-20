@@ -21,8 +21,8 @@ parser.add_argument('--cont_embeddings', default='MLP', type=str,choices = ['MLP
 parser.add_argument('--embedding_size', default=32, type=int)
 parser.add_argument('--transformer_depth', default=6, type=int)
 parser.add_argument('--attention_heads', default=8, type=int)
-parser.add_argument('--attention_dropout', default=0.1, type=float)
-parser.add_argument('--ff_dropout', default=0.1, type=float)
+parser.add_argument('--attention_dropout', default=0.8, type=float)
+parser.add_argument('--ff_dropout', default=0.8, type=float)
 parser.add_argument('--attentiontype', default='colrow', type=str,choices = ['col','colrow','row','justmlp','attn','attnmlp'])
 
 parser.add_argument('--optimizer', default='AdamW', type=str,choices = ['AdamW','Adam','SGD'])
@@ -95,13 +95,9 @@ if nfeat > 100:
 if opt.attentiontype != 'col':
     opt.transformer_depth = 1
     opt.attention_heads = 4
-    opt.attention_dropout = 0.8
     opt.embedding_size = 16
     if opt.optimizer =='SGD':
-        opt.ff_dropout = 0.4
         opt.lr = 0.01
-    else:
-        opt.ff_dropout = 0.8
 
 if opt.dset_id in [41540, 42729, 42728]:
     opt.batchsize = 2048

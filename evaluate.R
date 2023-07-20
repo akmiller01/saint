@@ -85,7 +85,7 @@ plot(y_hat~x,data=saint)
 summary(lm(y~y_hat, data=saint))
 dev.off()
 
-# $ python train.py --dset_id iiasa_unhcr_refugees --task regression
+# $ python train.py --dset_id iiasa_unhcr_refugees --task regression --epochs 1000 --attention_dropout 0.8
 # $ python sample.py --dset_id iiasa_unhcr_refugees --task regression
 saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_refugees.csv")
 plot(saint)
@@ -94,6 +94,23 @@ refugee_data = fread("~/git/saint/data/iiasa_unhcr_refugees.csv")
 ols = lm(refugees~
            Region+
            year+
+           pop+
+           gdp+
+           urban, data=refugee_data
+)
+summary(ols)
+crd = refugee_data[complete.cases(refugee_data),]
+crd$y_hat = predict.lm(ols, newdata=crd)
+crd$y = crd$refugees
+plot(y_hat~y, data=crd)
+
+# $ python train.py --dset_id iiasa_unhcr_refugees_no_cat --task regression --epochs 500 --attention_dropout 0.8
+# $ python sample.py --dset_id iiasa_unhcr_refugees_no_cat --task regression
+saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_refugees_no_cat.csv")
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+refugee_data = fread("~/git/saint/data/iiasa_unhcr_refugees_no_cat.csv")
+ols = lm(refugees~
            pop+
            gdp+
            urban, data=refugee_data
