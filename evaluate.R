@@ -73,10 +73,14 @@ self_attention_test$y[exponential] = self_attention_test$x[exponential]^2
 self_attention_test$formula[exponential] = "x^2"
 self_attention_test = self_attention_test[,c("y","x","formula")]
 fwrite(self_attention_test, "~/git/saint/data/self_attention_test.csv")
+par(mfrow=c(1,2))
 plot(y~x, data=self_attention_test)
+ols = lm(y~x+factor(formula), data=self_attention_test)
+summary(ols)
 
-# $ python train.py --dset_id self_attention_test --task regression --attentiontype row
-# $ python sample.py --dset_id self_attention_test --task regression --attentiontype row
+# $ python train.py --dset_id self_attention_test --task regression --pretrain
+# $ python sample.py --dset_id self_attention_test --task regression # With mod to output x
 saint = fread("~/git/saint/outputs/regression_self_attention_test.csv")
-plot(saint)
+plot(y_hat~x,data=saint)
 summary(lm(y~y_hat, data=saint))
+dev.off()

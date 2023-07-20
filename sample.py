@@ -145,7 +145,9 @@ model.load_state_dict(state_dict)
 
 all_y = list()
 all_y_hat = list()
+# all_x_cont = list()
 
+mean, std = continuous_mean_std
 with torch.no_grad():
     for i, data in enumerate(testloader, 0):
         x_categ, x_cont, y_gts, cat_mask, con_mask = data[0].to(device), data[1].to(device),data[2].to(device),data[3].to(device),data[4].to(device)
@@ -161,8 +163,12 @@ with torch.no_grad():
         all_y += y
         all_y_hat += y_hat
 
+        # x_cont_original = (x_cont * std) + mean
+        # all_x_cont += list(chain(*x_cont_original.tolist()))
+
 out_df = pd.DataFrame(
     {
+        # 'x': all_x_cont,
         'y': all_y,
         'y_hat': all_y_hat
     }
