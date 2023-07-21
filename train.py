@@ -19,8 +19,8 @@ parser.add_argument('--vision_dset', action = 'store_true')
 parser.add_argument('--task', required=True, type=str,choices = ['binary','multiclass','regression'])
 parser.add_argument('--cont_embeddings', default='MLP', type=str,choices = ['MLP','Noemb','pos_singleMLP'])
 parser.add_argument('--embedding_size', default=32, type=int)
-parser.add_argument('--transformer_depth', default=6, type=int)
-parser.add_argument('--attention_heads', default=8, type=int)
+parser.add_argument('--transformer_depth', default=1, type=int)
+parser.add_argument('--attention_heads', default=4, type=int)
 parser.add_argument('--attention_dropout', default=0.8, type=float)
 parser.add_argument('--ff_dropout', default=0.8, type=float)
 parser.add_argument('--attentiontype', default='colrow', type=str,choices = ['col','colrow','row','justmlp','attn','attnmlp'])
@@ -88,15 +88,7 @@ print('Downloading and processing the dataset, it might take some time.')
 cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std = data_prep_openml(opt.dset_id, opt.dset_seed,opt.task, datasplit=[.65, .15, .2])
 continuous_mean_std = np.array([train_mean,train_std]).astype(np.float32) 
 
-##### Setting some hyperparams based on inputs and dataset
 _,nfeat = X_train['data'].shape
-if nfeat > 100:
-    opt.embedding_size = min(8,opt.embedding_size)
-    opt.batchsize = min(64, opt.batchsize)
-if opt.attentiontype != 'col':
-    opt.transformer_depth = 1
-    opt.attention_heads = min(4,opt.attention_heads)
-    opt.embedding_size = min(32,opt.embedding_size)
 
 print(nfeat,opt.batchsize)
 print(opt)
