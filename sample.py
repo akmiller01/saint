@@ -86,7 +86,7 @@ if opt.active_log:
 
 
 print('Downloading and processing the dataset, it might take some time.')
-cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std = data_prep_openml(opt.dset_id, opt.dset_seed,opt.task, datasplit=[.65, .15, .2])
+cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std, y_mean, y_std = data_prep_openml(opt.dset_id, opt.dset_seed,opt.task, datasplit=[.65, .15, .2])
 continuous_mean_std = np.array([train_mean,train_std]).astype(np.float32) 
 
 _,nfeat = X_train['data'].shape
@@ -150,6 +150,11 @@ with torch.no_grad():
             probs = F.softmax(y_outs, dim=-1)
             y_outs = torch.multinomial(probs, num_samples=1)
         y_hat = list(chain(*y_outs.tolist()))
+        if opt.task == 'regression':
+            y = (np.array(y) * y_std) + y_mean
+            y = y.tolist()
+            y_hat = (np.array(y_hat) * y_std) + y_mean
+            y_hat = y_hat.tolist()
         all_y += y
         all_y_hat += y_hat
 

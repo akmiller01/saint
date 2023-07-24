@@ -138,7 +138,7 @@ crd$y_hat = predict.lm(ols, newdata=crd)
 crd$y = crd$refugees
 plot(y_hat~y, data=crd)
 
-# $ python train.py --dset_id iiasa_unhcr_displaced --task regression --attention_dropout 0.9 --ff_dropout 0.9
+# $ python train.py --dset_id iiasa_unhcr_displaced --task regression
 # $ python sample.py --dset_id iiasa_unhcr_displaced --task regression
 saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_displaced.csv")
 plot(saint)
@@ -170,3 +170,57 @@ crd$y = crd$displaced_persons
 plot(y_hat~y, data=crd)
 
 
+# $ python train.py --dset_id iiasa_unhcr_displaced2 --task regression
+# $ python sample.py --dset_id iiasa_unhcr_displaced2 --task regression
+saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_displaced2.csv")
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+displaced_data = fread("~/git/saint/data/iiasa_unhcr_displaced2.csv")
+ols = lm(displaced_persons~
+        pop_t1+
+         pop_t2+
+        pop_t3+
+        gdp_t1+
+        gdp_t2+
+        gdp_t3+
+        urban_t1+
+        urban_t2+
+        urban_t3+
+        pop_t1_o1+
+        gdp_t1_o1+
+        urban_t1_o1+
+        pop_t2_o1+
+        gdp_t2_o1+
+        urban_t2_o1+
+        pop_t3_o1+
+        gdp_t3_o1+
+        urban_t3_o1+
+        pop_t1_o2+
+        gdp_t1_o2+
+        urban_t1_o2+
+        pop_t2_o2+
+        gdp_t2_o2+
+        urban_t2_o2+
+        pop_t3_o2+
+        gdp_t3_o2+
+        urban_t3_o2+
+        pop_t1_o3+
+        gdp_t1_o3+
+        urban_t1_o3+
+        pop_t2_o3+
+        gdp_t2_o3+
+        urban_t2_o3+
+        pop_t3_o3+
+        gdp_t3_o3+
+        urban_t3_o3+
+        Region+
+        year+
+        pop+
+        gdp+
+        urban, data=displaced_data
+)
+summary(ols)
+crd = displaced_data[complete.cases(displaced_data),]
+crd$y_hat = predict.lm(ols, newdata=crd)
+crd$y = crd$displaced_persons
+plot(y_hat~y, data=crd)

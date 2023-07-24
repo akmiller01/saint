@@ -107,6 +107,11 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
     if task != 'regression':
         l_enc = LabelEncoder() 
         y = l_enc.fit_transform(y)
+    if task == 'regression':
+        y_mean, y_std = y.mean(0), y.std(0)
+        y = (y - y_mean) / y_std
+    else:
+        y_mean, y_std = (None, None)
     X_train, y_train = data_split(X,y,nan_mask,train_indices)
     X_valid, y_valid = data_split(X,y,nan_mask,valid_indices)
     X_test, y_test = data_split(X,y,nan_mask,test_indices)
@@ -114,7 +119,7 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
     train_mean, train_std = np.array(X_train['data'][:,con_idxs],dtype=np.float32).mean(0), np.array(X_train['data'][:,con_idxs],dtype=np.float32).std(0)
     train_std = np.where(train_std < 1e-6, 1e-6, train_std)
     # import ipdb; ipdb.set_trace()
-    return cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std
+    return cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std, y_mean, y_std
 
 
 
