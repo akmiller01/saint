@@ -245,11 +245,14 @@ for epoch in range(opt.epochs):
                             torch.save(model.state_dict(),'%s/bestmodel.pth' % (modelsave_path))
 
                 else:
-                    train_rmse = mean_sq_error(model, trainloader, device,vision_dset)    
+                    try:
+                        train_rmse = mean_sq_error(model, trainloader, device,vision_dset)    
+                        print('[EPOCH %d] TRAIN RMSE: %.3f' %
+                            (epoch + 1, train_rmse ))
+                    except:
+                        pass
                     valid_rmse = mean_sq_error(model, validloader, device,vision_dset)    
                     test_rmse = mean_sq_error(model, testloader, device,vision_dset)  
-                    print('[EPOCH %d] TRAIN RMSE: %.3f' %
-                        (epoch + 1, train_rmse ))
                     print('[EPOCH %d] VALID RMSE: %.3f' %
                         (epoch + 1, valid_rmse ))
                     print('[EPOCH %d] TEST RMSE: %.3f' %
