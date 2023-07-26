@@ -150,11 +150,8 @@ with torch.no_grad():
         # x_cont_original = (x_cont * std) + mean
         # all_x_cont += list(chain(*x_cont_original.tolist()))
 
-out_df = pd.DataFrame(
-    {
-        # 'x': all_x_cont,
-        'y_hat': all_y_hat
-    }
-)
 
-out_df.to_csv('outputs/{}_{}_forecast.csv'.format(opt.task, opt.dset_id), index=False)
+forecast_dataset = pd.read_csv(os.path.join("data", "{}_forecasting.csv".format(opt.dset_id)))
+forecast_dataset['y_hat'] = all_y_hat
+
+forecast_dataset.to_csv('outputs/{}_{}_forecast.csv'.format(opt.task, opt.dset_id), index=False)
