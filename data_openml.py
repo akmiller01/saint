@@ -41,7 +41,7 @@ def data_split(X,y,nan_mask,indices):
     return x_d, y_d
 
 
-def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
+def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2], forecasting=False):
     
     np.random.seed(seed)
     try:
@@ -60,8 +60,18 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
         categorical_columns = X.columns[categorical_indicator].tolist()
         for i in range(0, len(categorical_indicator)):
             print(X.columns[i], ": Categorical" if categorical_indicator[i] else ": Numerical")
+
+        if forecasting:
+            forecast_dataset = pd.read_csv(os.path.join("data", "{}_forecasting.csv".format(ds_id)))
+            y_forecast = forecast_dataset.pop(forecast_dataset.columns[0])
+            forecast_categories = forecast_dataset.pop(forecast_dataset.columns[0])
+            X_forecast = forecast_dataset
+
         for categorical_column in categorical_columns:
             X[categorical_column] = X[categorical_column].astype('str')
+            if forecasting:
+                X_forecast[categorical_column] = X_forecast[categorical_column].astype('str')
+
     if ds_id == 42178:
         categorical_indicator = [True, False, True,True,False,True,True,True,True,True,True,True,True,True,True,True,True,False, False]
         tmp = [x if (x != ' ') else '0' for x in X['TotalCharges'].tolist()]
@@ -82,6 +92,8 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
 
     for col in categorical_columns:
         X[col] = X[col].astype("object")
+        if forecasting:
+            X_forecast[col] = X_forecast[col].astype("object")
 
     X["Set"] = np.random.choice(["train", "valid", "test"], p = datasplit, size=(X.shape[0],))
 
@@ -92,6 +104,9 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
     X = X.drop(columns=['Set'])
     temp = X.fillna("MissingValue")
     nan_mask = temp.ne("MissingValue").astype(int)
+    if forecasting:
+        forecast_temp = X_forecast.fillna("MissingValue")
+        forecast_nan_mask = forecast_temp.ne("MissingValue").astype(int)
     
     cat_dims = []
     for col in categorical_columns:
@@ -100,26 +115,42 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2]):
         l_enc = LabelEncoder() 
         X[col] = l_enc.fit_transform(X[col].values)
         cat_dims.append(len(l_enc.classes_))
+        if forecasting:
+            X_forecast[col] = X_forecast[col].fillna("MissingValue")
+            X_forecast[col] = l_enc.fit_transform(X_forecast[col].values)
     for col in cont_columns:
     #     X[col].fillna("MissingValue",inplace=True)
         X.fillna(X.loc[train_indices, col].mean(), inplace=True)
+        if forecasting:
+            X_forecast.fillna(X.loc[train_indices, col].mean(), inplace=True)
     y = y.values
+    if forecasting:
+        y_forecast = y_forecast.values
     if task != 'regression':
         l_enc = LabelEncoder() 
         y = l_enc.fit_transform(y)
+        if forecasting:
+            y_forecast = l_enc.fit_transform(y_forecast)
     if task == 'regression':
         y_mean, y_std = y.mean(0), y.std(0)
         y = (y - y_mean) / y_std
+        if forecasting:
+            y_forecast = (y_forecast - y_mean) / y_std
     else:
         y_mean, y_std = (None, None)
     X_train, y_train = data_split(X,y,nan_mask,train_indices)
     X_valid, y_valid = data_split(X,y,nan_mask,valid_indices)
     X_test, y_test = data_split(X,y,nan_mask,test_indices)
+    if forecasting:
+        X_forecast, y_forecast = data_split(X_forecast, y_forecast,forecast_nan_mask,X_forecast.index)
 
     train_mean, train_std = np.array(X_train['data'][:,con_idxs],dtype=np.float32).mean(0), np.array(X_train['data'][:,con_idxs],dtype=np.float32).std(0)
     train_std = np.where(train_std < 1e-6, 1e-6, train_std)
     # import ipdb; ipdb.set_trace()
-    return cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std, y_mean, y_std
+    if forecasting:
+        return cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, X_forecast, y_forecast, train_mean, train_std, y_mean, y_std
+    else:
+        return cat_dims, cat_idxs, con_idxs, X_train, y_train, X_valid, y_valid, X_test, y_test, train_mean, train_std, y_mean, y_std
 
 
 

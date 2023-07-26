@@ -170,12 +170,12 @@ crd$y = crd$displaced_persons
 plot(y_hat~y, data=crd)
 
 
-# $ python train.py --dset_id iiasa_unhcr_displaced2 --task regression
-# $ python sample.py --dset_id iiasa_unhcr_displaced2 --task regression
-saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_displaced2.csv")
+# $ python train.py --dset_id iiasa_unhcr_displaced2_bigram --task regression
+# $ python sample.py --dset_id iiasa_unhcr_displaced2_bigram --task regression
+saint = fread("~/git/saint/outputs/regression_iiasa_unhcr_displaced2_bigram.csv")
 plot(saint)
 summary(lm(y~y_hat, data=saint))
-displaced_data = fread("~/git/saint/data/iiasa_unhcr_displaced2.csv")
+displaced_data = fread("~/git/saint/data/iiasa_unhcr_displaced2_bigram.csv")
 ols = lm(displaced_persons~
         pop_t1+
          pop_t2+
@@ -214,10 +214,7 @@ ols = lm(displaced_persons~
         gdp_t3_o3+
         urban_t3_o3+
         Region+
-        year+
-        pop+
-        gdp+
-        urban, data=displaced_data
+        year, data=displaced_data
 )
 summary(ols)
 crd = displaced_data[complete.cases(displaced_data),]
