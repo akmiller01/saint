@@ -10,11 +10,21 @@ forecast = fread("outputs/regression_iiasa_unhcr_displaced2_bigram_forecast.csv"
 
 forecast$displaced_persons[which(forecast$year>=2023)] = forecast$y_hat[which(forecast$year>=2023)]
 forecast$displaced_persons[which(forecast$displaced_persons<0)] = 0
-forecast_agg = forecast[,.(displaced_persons=sum(displaced_persons, na.rm=T)/1e6), by=.(Scenario, year)]
+forecast$displaced_persons = forecast$displaced_persons / 1e6
+forecast_agg = forecast[,.(displaced_persons=sum(displaced_persons, na.rm=T)), by=.(Scenario, year)]
 
 people = dollar_format(prefix="")
 
 ggplot(forecast_agg, aes(x=year,y=displaced_persons,group=Scenario,color=Scenario)) +
+  scale_y_continuous(labels=people) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Displaced persons (millions)")
+
+samples = c("UGA")
+forecast_sample = subset(forecast, Region %in% samples)
+forecast_sample$Region_Scenario = paste0(forecast_sample$Region, " - ", forecast_sample$Scenario)
+ggplot(forecast_sample, aes(x=year,y=displaced_persons,group=Region_Scenario,color=Region_Scenario)) +
   scale_y_continuous(labels=people) +
   geom_line() +
   theme_classic() +
