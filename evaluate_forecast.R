@@ -27,9 +27,9 @@ ggplot(forecast_agg, aes(x=year,y=displaced_persons,group=Scenario,color=Scenari
 samples = c("UGA")
 forecast_sample = subset(forecast, Region %in% samples)
 forecast_sample$Region_Scenario = paste0(forecast_sample$Region, " - ", forecast_sample$Scenario)
-ggplot(forecast_sample, aes(x=year,y=displaced_persons,group=Region_Scenario,color=Region_Scenario)) +
+ggplot(forecast_sample, aes(x=year,y=displaced_persons,group=Region_Scenario,fill=Region_Scenario)) +
   scale_y_continuous(labels=people) +
-  geom_line() +
+  geom_area(stat="identity") +
   theme_classic() +
   labs(x="Year", y="Displaced persons (millions)")
 
