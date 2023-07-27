@@ -6,12 +6,15 @@ lapply(list.of.packages, require, character.only=T)
 wd_base = "~/git/"
 setwd(paste0(wd_base, "saint"))
 
-forecast = fread("outputs/regression_iiasa_unhcr_displaced2_bigram_forecast.csv")
+forecast = fread("outputs/regression_iiasa_unhcr_displaced2_forecast.csv")
 
 forecast$displaced_persons[which(forecast$year>=2023)] = forecast$y_hat[which(forecast$year>=2023)]
 forecast$displaced_persons[which(forecast$displaced_persons<0)] = 0
 forecast$displaced_persons = forecast$displaced_persons / 1e6
-forecast_agg = forecast[,.(displaced_persons=sum(displaced_persons, na.rm=T)), by=.(Scenario, year)]
+forecast_agg = forecast[,.(
+  displaced_persons=sum(displaced_persons, na.rm=T),
+  pop=sum(pop, na.rm=T)
+  ), by=.(Scenario, year)]
 
 people = dollar_format(prefix="")
 
@@ -29,3 +32,11 @@ ggplot(forecast_sample, aes(x=year,y=displaced_persons,group=Region_Scenario,col
   geom_line() +
   theme_classic() +
   labs(x="Year", y="Displaced persons (millions)")
+
+forecast_agg$displacement_pc = forecast_agg$displaced_persons / forecast_agg$pop
+
+ggplot(forecast_agg, aes(x=year,y=displacement_pc,group=Scenario,color=Scenario)) +
+  scale_y_continuous(labels=percent) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Displaced persons (%)")
