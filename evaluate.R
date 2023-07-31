@@ -248,3 +248,30 @@ crd = displaced_data[complete.cases(displaced_data),]
 crd$y_hat = predict.lm(ols, newdata=crd)
 crd$y = crd$displaced_persons
 plot(y_hat~y, data=crd)
+
+
+# $ python train.py --dset_id tripartite --task regression
+# $ python sample.py --dset_id tripartite --task regression
+saint = fread("~/git/saint/outputs/regression_tripartite.csv")
+(sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+tri_data = fread("~/git/saint/data/tripartite.csv")
+ols = lm(humanitarian_needs~
+           displaced_persons+
+           climate_affected_persons+
+           conflict+
+           temp+
+           gdp+
+           pop+
+           urban+
+           iso3+
+           lat+
+           lon+
+           year, data=tri_data
+)
+summary(ols)
+crd = tri_data[complete.cases(tri_data),]
+crd$y_hat = predict.lm(ols, newdata=crd)
+crd$y = crd$displaced_persons
+plot(y_hat~y, data=crd)
