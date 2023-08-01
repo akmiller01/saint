@@ -250,28 +250,13 @@ crd$y = crd$displaced_persons
 plot(y_hat~y, data=crd)
 
 
-# $ python train.py --dset_id tripartite --task regression
-# $ python sample.py --dset_id tripartite --task regression
-saint = fread("~/git/saint/outputs/regression_tripartite.csv")
-(sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
-plot(saint)
-summary(lm(y~y_hat, data=saint))
-tri_data = fread("~/git/saint/data/tripartite.csv")
-ols = lm(humanitarian_needs~
-           displaced_persons+
-           climate_affected_persons+
-           conflict+
-           temp+
-           gdp+
-           pop+
-           urban+
-           iso3+
-           lat+
-           lon+
-           year, data=tri_data
-)
-summary(ols)
-crd = tri_data[complete.cases(tri_data),]
-crd$y_hat = predict.lm(ols, newdata=crd)
-crd$y = crd$displaced_persons
-plot(y_hat~y, data=crd)
+# $ python train.py --dset_id simple_uppsala_replication --task binary
+# $ python sample.py --dset_id simple_uppsala_replication --task binary
+saint = fread("~/git/saint/outputs/binary_simple_uppsala_replication.csv")
+mean(saint$y==saint$y_hat)
+heatmap(table(saint$y_hat, saint$y), Rowv = NA, Colv = NA, revC = T, scale = "row")
+pred = data.table(table(saint$y, saint$y_hat))
+names(pred) = c("y", "y_hat", "count")
+pred$correct = pred$y == pred$y_hat
+View(pred)
+pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y==1)])
