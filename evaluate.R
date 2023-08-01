@@ -260,3 +260,4 @@ names(pred) = c("y", "y_hat", "count")
 pred$correct = pred$y == pred$y_hat
 View(pred)
 pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y==1)])
+pred$count[which(pred$y==0 & pred$y_hat==0)] / sum(pred$count[which(pred$y==0)])
