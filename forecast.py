@@ -1,12 +1,11 @@
 import torch
-from torch import nn
-from torch.nn import functional as F
+
 from models import SAINT
 
 from data_openml import data_prep_openml,DataSetCatCon
+from utils import generate_outputs
 import argparse
 from torch.utils.data import DataLoader
-from augmentations import embed_data_mask
 
 import os
 import numpy as np
@@ -128,27 +127,14 @@ model.to(device)
 state_dict = torch.load("bestmodels/{}/{}/testrun/bestmodel.pth".format(opt.task, opt.dset_id))
 model.load_state_dict(state_dict)
 
-all_y_hat = list()
-
-mean, std = continuous_mean_std
-with torch.no_grad():
-    for i, data in enumerate(forecast_loader, 0):
-        x_categ, x_cont, y_gts, cat_mask, con_mask = data[0].to(device), data[1].to(device),data[2].to(device),data[3].to(device),data[4].to(device)
-        _ , x_categ_enc, x_cont_enc = embed_data_mask(x_categ, x_cont, cat_mask, con_mask,model,vision_dset)
-        reps = model.transformer(x_categ_enc, x_cont_enc)
-        y_reps = reps[:,0,:]
-        y_outs = model.mlpfory(y_reps)
-        if opt.task != 'regression':
-            probs = F.softmax(y_outs, dim=-1)
-            y_outs = torch.multinomial(probs, num_samples=1)
-        y_hat = list(chain(*y_outs.tolist()))
-        if opt.task == 'regression':
-            y_hat = (np.array(y_hat) * y_std) + y_mean
-            y_hat = y_hat.tolist()
-        all_y_hat += y_hat
-
-        # x_cont_original = (x_cont * std) + mean
-        # all_x_cont += list(chain(*x_cont_original.tolist()))
+y_pred, y_test = generate_outputs(model, testloader, device, opt.task,vision_dset)
+if opt.task == 'regression':
+    y_test = (y_test * y_std) + y_mean
+    y_pred = (y_pred * y_std) + y_mean
+    y_pred = list(chain(*y_pred.tolist()))
+else:
+    y_pred = y_pred.tolist()
+y_test = y_test.tolist()
 
 
 forecast_dataset = pd.read_csv(os.path.join("data", "{}_forecasting.csv".format(opt.dset_id)))

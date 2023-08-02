@@ -253,6 +253,8 @@ plot(y_hat~y, data=crd)
 # $ python train.py --dset_id simple_uppsala_replication --task binary
 # $ python sample.py --dset_id simple_uppsala_replication --task binary
 saint = fread("~/git/saint/outputs/binary_simple_uppsala_replication.csv")
+saint$y_prob = saint$y_hat
+saint$y_hat = round(saint$y_prob)
 mean(saint$y==saint$y_hat)
 heatmap(table(saint$y_hat, saint$y), Rowv = NA, Colv = NA, revC = T, scale = "row")
 pred = data.table(table(saint$y, saint$y_hat))

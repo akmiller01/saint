@@ -114,3 +114,28 @@ def mean_sq_error(model, dloader, device, vision_dset):
         rmse = mean_squared_error(y_test.cpu(), y_pred.cpu(), squared=False)
         return rmse
 
+
+def generate_outputs(model, dloader, device, task,vision_dset):
+    model.eval()
+    m = nn.Softmax(dim=1)
+    y_test = torch.empty(0).to(device)
+    y_pred = torch.empty(0).to(device)
+    prob = torch.empty(0).to(device)
+    with torch.no_grad():
+        for i, data in enumerate(dloader, 0):
+            x_categ, x_cont, y_gts, cat_mask, con_mask = data[0].to(device), data[1].to(device),data[2].to(device),data[3].to(device),data[4].to(device)
+            _ , x_categ_enc, x_cont_enc = embed_data_mask(x_categ, x_cont, cat_mask, con_mask,model,vision_dset)           
+            reps = model.transformer(x_categ_enc, x_cont_enc)
+            y_reps = reps[:,0,:]
+            y_outs = model.mlpfory(y_reps)
+            # import ipdb; ipdb.set_trace()   
+            y_test = torch.cat([y_test,y_gts.squeeze().float()],dim=0)
+            if task == 'regression':
+                y_pred = torch.cat([y_pred,y_outs],dim=0)
+            else:
+                y_pred = torch.cat([y_pred,torch.argmax(y_outs, dim=1).float()],dim=0)
+            if task == 'binary':
+                prob = torch.cat([prob,m(y_outs)[:,-1].float()],dim=0)
+    if task == 'binary':
+        return prob.cpu(), y_test.cpu()
+    return y_pred.cpu(), y_test.cpu()
