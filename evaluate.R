@@ -1,4 +1,4 @@
-list.of.packages <- c("data.table","OpenML", "farff")
+list.of.packages <- c("data.table","OpenML", "farff", "ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only=T)
@@ -255,7 +255,7 @@ plot(y_hat~y, data=crd)
 saint = fread("~/git/saint/outputs/binary_simple_uppsala_replication.csv")
 saint$y_prob = saint$y_hat
 saint$y_hat = round(saint$y_prob)
-boxplot(y_prob~y,data=saint, horizontal=T)
+ggplot(saint, aes(x=factor(y), y=y_prob)) + geom_violin(scale="width")
 pred = data.table(table(saint$y, saint$y_hat))
 names(pred) = c("y", "y_hat", "count")
 pred$correct = pred$y == pred$y_hat
