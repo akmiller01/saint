@@ -269,3 +269,24 @@ print(
   "; Accuracy: ", accuracy
   )
 )
+
+# $ python train.py --dset_id conflict_clim --task binary
+# $ python sample.py --dset_id conflict_clim --task binary
+saint = fread("~/git/saint/outputs/binary_conflict_clim.csv")
+saint$y_prob = saint$y_hat
+saint$y_hat = round(saint$y_prob)
+ggplot(saint, aes(x=factor(y), y=y_prob)) + geom_violin(scale="width")
+pred = data.table(table(saint$y, saint$y_hat))
+names(pred) = c("y", "y_hat", "count")
+pred$correct = pred$y == pred$y_hat
+recall = pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y==1)])
+precision = pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y_hat==1)])
+accuracy = mean(saint$y==saint$y_hat)
+print(
+  paste0(
+    "Recall: ", recall,
+    "; Precision: ", precision,
+    "; Accuracy: ", accuracy
+  )
+)
+
