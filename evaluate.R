@@ -255,11 +255,17 @@ plot(y_hat~y, data=crd)
 saint = fread("~/git/saint/outputs/binary_simple_uppsala_replication.csv")
 saint$y_prob = saint$y_hat
 saint$y_hat = round(saint$y_prob)
-mean(saint$y==saint$y_hat)
-heatmap(table(saint$y_hat, saint$y), Rowv = NA, Colv = NA, revC = T, scale = "row")
+boxplot(y_prob~y,data=saint, horizontal=T)
 pred = data.table(table(saint$y, saint$y_hat))
 names(pred) = c("y", "y_hat", "count")
 pred$correct = pred$y == pred$y_hat
-View(pred)
-pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y==1)])
-pred$count[which(pred$y==0 & pred$y_hat==0)] / sum(pred$count[which(pred$y==0)])
+recall = pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y==1)])
+precision = pred$count[which(pred$y==1 & pred$y_hat==1)] / sum(pred$count[which(pred$y_hat==1)])
+accuracy = mean(saint$y==saint$y_hat)
+print(
+  paste0(
+  "Recall: ", recall,
+  "; Precision: ", precision,
+  "; Accuracy: ", accuracy
+  )
+)

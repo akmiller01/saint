@@ -127,7 +127,7 @@ model.to(device)
 state_dict = torch.load("bestmodels/{}/{}/testrun/bestmodel.pth".format(opt.task, opt.dset_id))
 model.load_state_dict(state_dict)
 
-y_pred, y_test = generate_outputs(model, testloader, device, opt.task,vision_dset)
+y_pred, y_test = generate_outputs(model, forecast_loader, device, opt.task,vision_dset)
 if opt.task == 'regression':
     y_test = (y_test * y_std) + y_mean
     y_pred = (y_pred * y_std) + y_mean
@@ -138,6 +138,6 @@ y_test = y_test.tolist()
 
 
 forecast_dataset = pd.read_csv(os.path.join("data", "{}_forecasting.csv".format(opt.dset_id)))
-forecast_dataset['y_hat'] = all_y_hat
+forecast_dataset['y_hat'] = y_pred
 
 forecast_dataset.to_csv('outputs/{}_{}_forecast.csv'.format(opt.task, opt.dset_id), index=False)
