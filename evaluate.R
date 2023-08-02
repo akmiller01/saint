@@ -1,4 +1,4 @@
-list.of.packages <- c("data.table","OpenML", "farff", "ggplot2")
+list.of.packages <- c("data.table","OpenML", "farff", "ggplot2", "plm")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only=T)
@@ -289,4 +289,28 @@ print(
     "; Accuracy: ", accuracy
   )
 )
+conflict_clim = fread("~/git/saint/data/conflict_clim.csv")
+fit = glm(
+  conflict~
+    prec+tmin+tmax+iso3,
+  data=conflict_clim, family="binomial"
+)
+summary(fit)
+nullhypo <- glm(conflict~1, data=conflict_clim, family="binomial")
+mcFadden = 1-logLik(fit)/logLik(nullhypo)
+mcFadden
+forecast = fread("~/git/saint/data/conflict_clim_forecasting.csv")
+forecast$y_prob = predict.glm(fit, newdata = forecast)
+forecast$y_prob = forecast$y_prob - min(forecast$y_prob, na.rm=T)
+forecast$y_prob = forecast$y_prob / max(forecast$y_prob, na.rm=T)
+forecast$y_hat = round(forecast$y_prob)
+forecast$conflict[which(forecast$year>=2014)] = forecast$y_hat[which(forecast$year>=2043)]
+forecast_agg = forecast[,.(
+  conflicts=sum(y_hat, na.rm=T)
+), by=.(scenario, year)]
 
+ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
+  scale_y_continuous(labels=label_comma(), limits = c(0, max(forecast_agg$conflicts))) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Global conflicts")
