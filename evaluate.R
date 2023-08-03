@@ -272,7 +272,7 @@ print(
 
 # $ python train.py --dset_id conflict_clim --task binary
 # $ python sample.py --dset_id conflict_clim --task binary
-saint = fread("~/git/saint/outputs/binary_conflict_clim.csv")
+saint = fread("~/git/saint/outputs/binary_conflict_clim_bigram.csv")
 saint$y_prob = saint$y_hat
 saint$y_hat = round(saint$y_prob)
 ggplot(saint, aes(x=factor(y), y=y_prob)) + geom_violin(scale="width")
@@ -289,9 +289,10 @@ print(
     "; Accuracy: ", accuracy
   )
 )
-conflict_clim = fread("~/git/saint/data/conflict_clim.csv")
+conflict_clim = fread("~/git/saint/data/conflict_clim_bigram.csv")
 fit = glm(
   conflict~
+    gdpgrowth+
     prec_1+
     prec_2+
     prec_3+

@@ -6,7 +6,7 @@ lapply(list.of.packages, require, character.only=T)
 wd_base = "~/git/"
 setwd(paste0(wd_base, "saint"))
 
-forecast = fread("outputs/binary_conflict_clim_forecast.csv")
+forecast = fread("outputs/binary_conflict_clim_bigram_forecast.csv")
 forecast$y_prob = forecast$y_hat
 forecast$y_hat = round(forecast$y_prob)
 
@@ -29,12 +29,6 @@ forecast_agg = forecast[,.(
 ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
   scale_y_continuous(labels=label_comma()) +
   geom_line() +
-  theme_classic() +
-  labs(x="Year", y="Global conflicts")
-
-ggplot(subset(forecast_agg, year>2030 | year==2021), aes(x=year,y=conflicts,group=scenario,fill=scenario)) +
-  scale_y_continuous(labels=label_comma()) +
-  geom_bar(stat="identity", position="dodge") +
   theme_classic() +
   labs(x="Year", y="Global conflicts")
 
