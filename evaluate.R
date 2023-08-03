@@ -292,7 +292,42 @@ print(
 conflict_clim = fread("~/git/saint/data/conflict_clim.csv")
 fit = glm(
   conflict~
-    prec+tmin+tmax+iso3,
+    prec_1+
+    prec_2+
+    prec_3+
+    prec_4+
+    prec_5+
+    prec_6+
+    prec_7+
+    prec_8+
+    prec_9+
+    prec_10+
+    prec_11+
+    prec_12+
+    tmax_1+
+    tmax_2+
+    tmax_3+
+    tmax_4+
+    tmax_5+
+    tmax_6+
+    tmax_7+
+    tmax_8+
+    tmax_9+
+    tmax_10+
+    tmax_11+
+    tmax_12+
+    tmin_1+
+    tmin_2+
+    tmin_3+
+    tmin_4+
+    tmin_5+
+    tmin_6+
+    tmin_7+
+    tmin_8+
+    tmin_9+
+    tmin_10+
+    tmin_11+
+    tmin_12+iso3+year,
   data=conflict_clim, family="binomial"
 )
 summary(fit)
@@ -304,11 +339,11 @@ forecast$y_prob = predict.glm(fit, newdata = forecast)
 forecast$y_prob = forecast$y_prob - min(forecast$y_prob, na.rm=T)
 forecast$y_prob = forecast$y_prob / max(forecast$y_prob, na.rm=T)
 forecast$y_hat = round(forecast$y_prob)
-forecast$conflict[which(forecast$year>=2014)] = forecast$y_hat[which(forecast$year>=2043)]
+forecast$conflict[which(forecast$year>=2014)] = forecast$y_hat[which(forecast$year>=2014)]
 forecast_agg = forecast[,.(
   conflicts=sum(y_hat, na.rm=T)
 ), by=.(scenario, year)]
-
+library(scales)
 ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
   scale_y_continuous(labels=label_comma(), limits = c(0, max(forecast_agg$conflicts))) +
   geom_line() +
