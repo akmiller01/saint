@@ -374,8 +374,8 @@ forecast = fread("~/git/saint/data/tripartite_bigram_forecasting.csv")
 # forecast$year = sapply(scenario_split, `[[`, 3)
 
 forecast$humanitarian_needs = predict.lm(ols, newdata = forecast)
-forecast$humanitarian_needs = forecast$humanitarian_needs / 1e12
-forecast = subset(forecast, year > 2023)
+forecast$humanitarian_needs = forecast$humanitarian_needs / 1e9
+forecast = subset(forecast, year > 2050 & year < 2101)
 forecast_agg = forecast[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
@@ -386,8 +386,8 @@ ggplot(forecast_agg, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
   scale_y_continuous(labels=dollar) +
   geom_bar(stat="identity", position="dodge") +
   theme_classic() +
-  labs(x="SSP Scenario", y="Humanitarian needs (trillion USD$)",
-       title="Projected global humanitarian needs (2023-2100)")
+  labs(x="SSP Scenario", y="Humanitarian needs (billion USD$)",
+       title="Projected global humanitarian needs (2051-2100)")
 
 
 # $ python train.py --dset_id displacement_worldclim --task regression

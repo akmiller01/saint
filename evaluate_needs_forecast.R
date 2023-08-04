@@ -27,7 +27,7 @@ forecast$humanitarian_needs[which(forecast$year>=2023)] = forecast$y_hat[which(f
 forecast$humanitarian_needs[which(forecast$humanitarian_needs<0)] = 0
 forecast$humanitarian_needs = forecast$humanitarian_needs / 1e6
 
-forecast_agg_scen = subset(forecast, year>2022 & year<2051)[,.(
+forecast_agg_scen = subset(forecast, year>2022 & year<2101)[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
   conflict=sum(conflict, na.rm=T)
@@ -37,7 +37,7 @@ ggplot(forecast_agg_scen, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
   geom_bar(stat="identity", position="dodge") +
   theme_classic() +
   labs(x="SSP Scenario", y="Humanitarian needs (million USD$)",
-       title="Projected global humanitarian needs (2023-2050)")
+       title="Projected global humanitarian needs (2023-2100)")
 
 forecast_agg = forecast[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
