@@ -57,6 +57,8 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2], forecasting=Fa
         small_uniques = [uniques < 20 for uniques in dataset.apply(pd.Series.nunique).to_list()]
         object_dtypes = [dtype == 'O' for dtype in X.dtypes.tolist()]
         categorical_indicator = [a or b for a, b in zip(small_uniques, object_dtypes)]
+        # if ds_id == "tripartite_bigram":
+        #     categorical_indicator = [False, False, False, False, True, False, False, False]
         categorical_columns = X.columns[categorical_indicator].tolist()
         for i in range(0, len(categorical_indicator)):
             print(X.columns[i], ": Categorical" if categorical_indicator[i] else ": Numerical")
