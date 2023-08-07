@@ -30,6 +30,7 @@ forecast$humanitarian_needs = forecast$humanitarian_needs / 1e6
 forecast_agg_scen = subset(forecast, year>2022 & year<2101)[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
+  climate_disasters=sum(climate_disasters, na.rm=T),
   conflict=sum(conflict, na.rm=T)
 ), by=.(scenario)]
 ggplot(forecast_agg_scen, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
@@ -42,10 +43,11 @@ ggplot(forecast_agg_scen, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
 forecast_agg = forecast[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
+  climate_disasters=sum(climate_disasters, na.rm=T),
   conflict=sum(conflict, na.rm=T)
 ), by=.(scenario, year)]
 forecast_agg_l = melt(forecast_agg, id.vars=c("scenario", "year"))
-ggplot(forecast_agg_l, aes(x=year,y=value,group=variable,color=variable)) +
+ggplot(subset(forecast_agg_l, variable=="conflict"), aes(x=year,y=value,group=variable,color=variable)) +
   geom_line() +
   facet_grid(scenario ~.)
 

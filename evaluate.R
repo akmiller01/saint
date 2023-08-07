@@ -316,19 +316,7 @@ fit = glm(
     tmax_9+
     tmax_10+
     tmax_11+
-    tmax_12+
-    tmin_1+
-    tmin_2+
-    tmin_3+
-    tmin_4+
-    tmin_5+
-    tmin_6+
-    tmin_7+
-    tmin_8+
-    tmin_9+
-    tmin_10+
-    tmin_11+
-    tmin_12+iso3+year,
+    tmax_12+iso3+year,
   data=conflict_clim, family="binomial"
 )
 summary(fit)
@@ -352,6 +340,145 @@ ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
   labs(x="Year", y="Global conflicts")
 
 
+# $ python train.py --dset_id displacement_worldclim --task regression
+# $ python sample.py --dset_id displacement_worldclim --task regression
+saint = fread("~/git/saint/outputs/regression_displacement_worldclim.csv")
+(sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+ols_data = fread("~/git/saint/data/displacement_worldclim.csv")
+ols_data$prec = rowSums(
+  ols_data[,c(
+    "prec_1",
+    "prec_2",
+    "prec_3",
+    "prec_4",
+    "prec_5",
+    "prec_6",
+    "prec_7",
+    "prec_8",
+    "prec_9",
+    "prec_10",
+    "prec_11",
+    "prec_12"
+  )]
+)
+ols_data$tmax = pmax(
+  ols_data$tmax_1,
+  ols_data$tmax_2,
+  ols_data$tmax_3,
+  ols_data$tmax_4,
+  ols_data$tmax_5,
+  ols_data$tmax_6,
+  ols_data$tmax_7,
+  ols_data$tmax_8,
+  ols_data$tmax_9,
+  ols_data$tmax_10,
+  ols_data$tmax_11,
+  ols_data$tmax_12
+)
+ols = lm(
+  displaced_persons~
+    prec+tmax,
+  data=ols_data
+)
+# ols = lm(
+#   displaced_persons~
+#     gdpgrowth+
+#     prec_1+
+#     prec_2+
+#     prec_3+
+#     prec_4+
+#     prec_5+
+#     prec_6+
+#     prec_7+
+#     prec_8+
+#     prec_9+
+#     prec_10+
+#     prec_11+
+#     prec_12+
+#     tmax_1+
+#     tmax_2+
+#     tmax_3+
+#     tmax_4+
+#     tmax_5+
+#     tmax_6+
+#     tmax_7+
+#     tmax_8+
+#     tmax_9+
+#     tmax_10+
+#     tmax_11+
+#     tmax_12+
+#     tmin_1+
+#     tmin_2+
+#     tmin_3+
+#     tmin_4+
+#     tmin_5+
+#     tmin_6+
+#     tmin_7+
+#     tmin_8+
+#     tmin_9+
+#     tmin_10+
+#     tmin_11+
+#     tmin_12+iso3+year,
+#   data=ols_data
+# )
+summary(ols)
+crd = ols_data[complete.cases(ols_data),]
+crd$y_hat = predict.lm(ols, newdata=crd)
+crd$y = crd$displaced_persons
+plot(y_hat~y, data=crd)
+
+
+# $ python train.py --dset_id climate_worldclim --task regression
+# $ python sample.py --dset_id climate_worldclim --task regression
+saint = fread("~/git/saint/outputs/regression_climate_worldclim.csv")
+(sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+ols_data = fread("~/git/saint/data/climate_worldclim.csv")
+ols_data$prec = rowSums(
+  ols_data[,c(
+    "prec_1",
+      "prec_2",
+      "prec_3",
+      "prec_4",
+      "prec_5",
+      "prec_6",
+      "prec_7",
+      "prec_8",
+      "prec_9",
+      "prec_10",
+      "prec_11",
+      "prec_12"
+  )]
+)
+ols_data$tmax = pmax(
+  ols_data$tmax_1,
+  ols_data$tmax_2,
+  ols_data$tmax_3,
+  ols_data$tmax_4,
+  ols_data$tmax_5,
+  ols_data$tmax_6,
+  ols_data$tmax_7,
+  ols_data$tmax_8,
+  ols_data$tmax_9,
+  ols_data$tmax_10,
+  ols_data$tmax_11,
+  ols_data$tmax_12
+)
+ols = lm(
+  climate_disasters~
+  prec+tmax,
+  data=ols_data
+)
+summary(ols)
+crd = ols_data[complete.cases(ols_data),]
+crd$y_hat = predict.lm(ols, newdata=crd)
+crd$y = crd$displaced_persons
+plot(y_hat~y, data=crd)
+
+
 # $ python train.py --dset_id tripartite_bigram --task regression
 # $ python sample.py --dset_id tripartite_bigram --task regression
 saint = fread("~/git/saint/outputs/regression_tripartite_bigram.csv")
@@ -359,24 +486,44 @@ saint = fread("~/git/saint/outputs/regression_tripartite_bigram.csv")
 plot(saint)
 summary(lm(y~y_hat, data=saint))
 ols_data = fread("~/git/saint/data/tripartite_bigram.csv")
+ols_data = ols_data[order(ols_data$iso3, ols_data$year),]
+ols_data <- ols_data %>%                           
+  group_by(iso3) %>%
+  dplyr::mutate(
+    hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
+  )
 ols = lm(humanitarian_needs~
-           # pop+
+           hum_t1+
            displaced_persons+
-           # climate_affected_persons+
+           climate_disasters+
            conflict
          , data=ols_data
 )
 summary(ols)
 forecast = fread("~/git/saint/data/tripartite_bigram_forecasting.csv")
-# scenario_split = strsplit(forecast$scenario, split = "|", fixed=T)
-# forecast$scenario = sapply(scenario_split, `[[`, 1)
-# forecast$iso3 = sapply(scenario_split, `[[`, 2)
-# forecast$year = sapply(scenario_split, `[[`, 3)
+forecast = forecast[order(forecast$scenario, forecast$iso3, forecast$year),]
+forecast <- forecast %>%                           
+  group_by(iso3) %>%
+  dplyr::mutate(
+    hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
+  )
 
-forecast$humanitarian_needs = predict.lm(ols, newdata = forecast)
+pb = txtProgressBar(min=2023, max=2100, style=3)
+for(year in c(2023:2100)){
+  setTxtProgressBar(pb, year)
+  forecast$humanitarian_needs[which(forecast$year==year)] =
+    predict.lm(ols, newdata = forecast[which(forecast$year==year),])
+  forecast <- forecast %>%                           
+    group_by(iso3) %>%
+    dplyr::mutate(
+      hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
+    )
+}
+close(pb)
+
 forecast$humanitarian_needs = forecast$humanitarian_needs / 1e9
-forecast = subset(forecast, year > 2050 & year < 2101)
-forecast_agg = forecast[,.(
+forecast_sub = subset(forecast, year > 2022 & year < 2101)
+forecast_agg = data.table(forecast_sub)[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
   conflict=sum(conflict, na.rm=T)
@@ -387,59 +534,15 @@ ggplot(forecast_agg, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
   geom_bar(stat="identity", position="dodge") +
   theme_classic() +
   labs(x="SSP Scenario", y="Humanitarian needs (billion USD$)",
-       title="Projected global humanitarian needs (2051-2100)")
-
-
-# $ python train.py --dset_id displacement_worldclim --task regression
-# $ python sample.py --dset_id displacement_worldclim --task regression
-saint = fread("~/git/saint/outputs/regression_displacement_worldclim.csv")
-(sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
-plot(saint)
-summary(lm(y~y_hat, data=saint))
-ols_data = fread("~/git/saint/data/displacement_worldclim.csv")
-ols = lm(
-  displaced_persons~
-    gdpgrowth+
-    prec_1+
-    prec_2+
-    prec_3+
-    prec_4+
-    prec_5+
-    prec_6+
-    prec_7+
-    prec_8+
-    prec_9+
-    prec_10+
-    prec_11+
-    prec_12+
-    tmax_1+
-    tmax_2+
-    tmax_3+
-    tmax_4+
-    tmax_5+
-    tmax_6+
-    tmax_7+
-    tmax_8+
-    tmax_9+
-    tmax_10+
-    tmax_11+
-    tmax_12+
-    tmin_1+
-    tmin_2+
-    tmin_3+
-    tmin_4+
-    tmin_5+
-    tmin_6+
-    tmin_7+
-    tmin_8+
-    tmin_9+
-    tmin_10+
-    tmin_11+
-    tmin_12+iso3+year,
-  data=ols_data
-)
-summary(ols)
-crd = ols_data[complete.cases(ols_data),]
-crd$y_hat = predict.lm(ols, newdata=crd)
-crd$y = crd$displaced_persons
-plot(y_hat~y, data=crd)
+       title="Projected global humanitarian needs (2023-2100)")
+forecast_agg = data.table(forecast)[,.(
+  humanitarian_needs=sum(humanitarian_needs, na.rm=T),
+  displaced_persons=sum(displaced_persons, na.rm=T),
+  climate_disasters=sum(climate_disasters, na.rm=T),
+  conflict=sum(conflict, na.rm=T)
+), by=.(scenario, year)]
+ggplot(subset(forecast_agg, year>2025), aes(x=year,y=humanitarian_needs,group=scenario,color=scenario)) +
+  scale_y_continuous(labels=dollar) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Humanitarian needs (billion USD$)")
