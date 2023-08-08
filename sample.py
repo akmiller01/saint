@@ -22,7 +22,7 @@ parser.add_argument('--transformer_depth', default=1, type=int)
 parser.add_argument('--attention_heads', default=4, type=int)
 parser.add_argument('--attention_dropout', default=0.8, type=float)
 parser.add_argument('--ff_dropout', default=0.8, type=float)
-parser.add_argument('--attentiontype', default='colrow', type=str,choices = ['col','colrow','row','justmlp','attn','attnmlp'])
+parser.add_argument('--attentiontype', default='col', type=str,choices = ['col','colrow','row','justmlp','attn','attnmlp'])
 
 parser.add_argument('--optimizer', default='AdamW', type=str,choices = ['AdamW','Adam','SGD'])
 parser.add_argument('--scheduler', default='cosine', type=str,choices = ['cosine','linear'])

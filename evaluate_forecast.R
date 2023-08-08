@@ -8,6 +8,10 @@ setwd(paste0(wd_base, "saint"))
 
 forecast = fread("outputs/regression_displacement_worldclim_forecast.csv")
 
+historical = subset(forecast, year<2023)
+historical = historical[,c("scenario", "iso3", "year", "y_hat")]
+historical_w = dcast(historical, iso3+year~scenario, value.var="y_hat")
+
 groupings = read.xlsx("~/git/humanitarian-ssp-projections/WB/CLASS.xlsx")
 names(groupings) = c(
   "country.name",

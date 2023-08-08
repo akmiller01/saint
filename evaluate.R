@@ -289,60 +289,97 @@ print(
     "; Accuracy: ", accuracy
   )
 )
-conflict_clim = fread("~/git/saint/data/conflict_clim_bigram.csv")
+ols_data = fread("~/git/saint/data/conflict_clim_bigram.csv")
+ols_data$prec = rowSums(
+  ols_data[,c(
+    "prec_1",
+    "prec_2",
+    "prec_3",
+    "prec_4",
+    "prec_5",
+    "prec_6",
+    "prec_7",
+    "prec_8",
+    "prec_9",
+    "prec_10",
+    "prec_11",
+    "prec_12"
+  )]
+)
+ols_data$tmax = pmax(
+  ols_data$tmax_1,
+  ols_data$tmax_2,
+  ols_data$tmax_3,
+  ols_data$tmax_4,
+  ols_data$tmax_5,
+  ols_data$tmax_6,
+  ols_data$tmax_7,
+  ols_data$tmax_8,
+  ols_data$tmax_9,
+  ols_data$tmax_10,
+  ols_data$tmax_11,
+  ols_data$tmax_12
+)
 fit = glm(
   conflict~
-    gdpgrowth+
-    prec_1+
-    prec_2+
-    prec_3+
-    prec_4+
-    prec_5+
-    prec_6+
-    prec_7+
-    prec_8+
-    prec_9+
-    prec_10+
-    prec_11+
-    prec_12+
-    tmax_1+
-    tmax_2+
-    tmax_3+
-    tmax_4+
-    tmax_5+
-    tmax_6+
-    tmax_7+
-    tmax_8+
-    tmax_9+
-    tmax_10+
-    tmax_11+
-    tmax_12+iso3+year,
-  data=conflict_clim, family="binomial"
+    gdpgrowth+prec+tmax,
+  data=ols_data, family="binomial"
 )
 summary(fit)
-nullhypo <- glm(conflict~1, data=conflict_clim, family="binomial")
+nullhypo <- glm(conflict~1, data=ols_data, family="binomial")
 mcFadden = 1-logLik(fit)/logLik(nullhypo)
 mcFadden
 forecast = fread("~/git/saint/data/conflict_clim_forecasting.csv")
+forecast$prec = rowSums(
+  forecast[,c(
+    "prec_1",
+    "prec_2",
+    "prec_3",
+    "prec_4",
+    "prec_5",
+    "prec_6",
+    "prec_7",
+    "prec_8",
+    "prec_9",
+    "prec_10",
+    "prec_11",
+    "prec_12"
+  )]
+)
+forecast$tmax = pmax(
+  forecast$tmax_1,
+  forecast$tmax_2,
+  forecast$tmax_3,
+  forecast$tmax_4,
+  forecast$tmax_5,
+  forecast$tmax_6,
+  forecast$tmax_7,
+  forecast$tmax_8,
+  forecast$tmax_9,
+  forecast$tmax_10,
+  forecast$tmax_11,
+  forecast$tmax_12
+)
 forecast$y_prob = predict.glm(fit, newdata = forecast)
 forecast$y_prob = forecast$y_prob - min(forecast$y_prob, na.rm=T)
 forecast$y_prob = forecast$y_prob / max(forecast$y_prob, na.rm=T)
 forecast$y_hat = round(forecast$y_prob)
 forecast$conflict[which(forecast$year>=2014)] = forecast$y_hat[which(forecast$year>=2014)]
 forecast_agg = forecast[,.(
-  conflicts=sum(y_hat, na.rm=T)
+  conflicts=sum(y_hat, na.rm=T),
+  gdpgrowth = mean(gdpgrowth, na.rm=T)
 ), by=.(scenario, year)]
 library(scales)
 ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
-  scale_y_continuous(labels=label_comma(), limits = c(0, max(forecast_agg$conflicts))) +
+  scale_y_continuous(labels=label_comma()) +
   geom_line() +
   theme_classic() +
   labs(x="Year", y="Global conflicts")
 
 
-# $ python train.py --dset_id displacement_worldclim --task regression
-# $ python sample.py --dset_id displacement_worldclim --task regression
-saint = fread("~/git/saint/outputs/regression_displacement_worldclim.csv")
+# $ python train.py --dset_id displacement_worldclim_nofe --task regression
+# $ python sample.py --dset_id displacement_worldclim_nofe --task regression
+saint = fread("~/git/saint/outputs/regression_displacement_worldclim_nofe.csv")
 (sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
 plot(saint)
 summary(lm(y~y_hat, data=saint))
@@ -379,55 +416,53 @@ ols_data$tmax = pmax(
 )
 ols = lm(
   displaced_persons~
-    prec+tmax,
+    gdpgrowth+prec+tmax,
   data=ols_data
 )
-# ols = lm(
-#   displaced_persons~
-#     gdpgrowth+
-#     prec_1+
-#     prec_2+
-#     prec_3+
-#     prec_4+
-#     prec_5+
-#     prec_6+
-#     prec_7+
-#     prec_8+
-#     prec_9+
-#     prec_10+
-#     prec_11+
-#     prec_12+
-#     tmax_1+
-#     tmax_2+
-#     tmax_3+
-#     tmax_4+
-#     tmax_5+
-#     tmax_6+
-#     tmax_7+
-#     tmax_8+
-#     tmax_9+
-#     tmax_10+
-#     tmax_11+
-#     tmax_12+
-#     tmin_1+
-#     tmin_2+
-#     tmin_3+
-#     tmin_4+
-#     tmin_5+
-#     tmin_6+
-#     tmin_7+
-#     tmin_8+
-#     tmin_9+
-#     tmin_10+
-#     tmin_11+
-#     tmin_12+iso3+year,
-#   data=ols_data
-# )
 summary(ols)
-crd = ols_data[complete.cases(ols_data),]
-crd$y_hat = predict.lm(ols, newdata=crd)
-crd$y = crd$displaced_persons
-plot(y_hat~y, data=crd)
+forecast = fread("~/git/saint/data/displacement_worldclim_forecasting.csv")
+forecast$prec = rowSums(
+  forecast[,c(
+    "prec_1",
+    "prec_2",
+    "prec_3",
+    "prec_4",
+    "prec_5",
+    "prec_6",
+    "prec_7",
+    "prec_8",
+    "prec_9",
+    "prec_10",
+    "prec_11",
+    "prec_12"
+  )]
+)
+forecast$tmax = pmax(
+  forecast$tmax_1,
+  forecast$tmax_2,
+  forecast$tmax_3,
+  forecast$tmax_4,
+  forecast$tmax_5,
+  forecast$tmax_6,
+  forecast$tmax_7,
+  forecast$tmax_8,
+  forecast$tmax_9,
+  forecast$tmax_10,
+  forecast$tmax_11,
+  forecast$tmax_12
+)
+forecast$y_hat = predict.lm(ols, newdata = forecast)
+forecast$displaced_persons[which(forecast$year>=2023)] = forecast$y_hat[which(forecast$year>=2023)]
+forecast_agg = forecast[,.(
+  displaced_persons=sum(y_hat, na.rm=T),
+  gdpgrowth = mean(gdpgrowth, na.rm=T)
+), by=.(scenario, year)]
+library(scales)
+ggplot(forecast_agg, aes(x=year,y=displaced_persons,group=scenario,color=scenario)) +
+  scale_y_continuous(labels=label_comma()) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Displaced persons")
 
 
 # $ python train.py --dset_id climate_worldclim --task regression
@@ -473,10 +508,48 @@ ols = lm(
   data=ols_data
 )
 summary(ols)
-crd = ols_data[complete.cases(ols_data),]
-crd$y_hat = predict.lm(ols, newdata=crd)
-crd$y = crd$displaced_persons
-plot(y_hat~y, data=crd)
+forecast = fread("~/git/saint/data/climate_worldclim_forecasting.csv")
+forecast$prec = rowSums(
+  forecast[,c(
+    "prec_1",
+    "prec_2",
+    "prec_3",
+    "prec_4",
+    "prec_5",
+    "prec_6",
+    "prec_7",
+    "prec_8",
+    "prec_9",
+    "prec_10",
+    "prec_11",
+    "prec_12"
+  )]
+)
+forecast$tmax = pmax(
+  forecast$tmax_1,
+  forecast$tmax_2,
+  forecast$tmax_3,
+  forecast$tmax_4,
+  forecast$tmax_5,
+  forecast$tmax_6,
+  forecast$tmax_7,
+  forecast$tmax_8,
+  forecast$tmax_9,
+  forecast$tmax_10,
+  forecast$tmax_11,
+  forecast$tmax_12
+)
+forecast$y_hat = predict.lm(ols, newdata = forecast)
+forecast$climate_disasters[which(forecast$year>=2023)] = forecast$y_hat[which(forecast$year>=2023)]
+forecast_agg = forecast[,.(
+  climate_disasters=sum(climate_disasters, na.rm=T)
+), by=.(scenario, year)]
+library(scales)
+ggplot(forecast_agg, aes(x=year,y=climate_disasters,group=scenario,color=scenario)) +
+  scale_y_continuous(labels=label_comma()) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Climate disasters")
 
 
 # $ python train.py --dset_id tripartite_bigram --task regression

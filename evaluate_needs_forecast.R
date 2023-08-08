@@ -47,9 +47,8 @@ forecast_agg = forecast[,.(
   conflict=sum(conflict, na.rm=T)
 ), by=.(scenario, year)]
 forecast_agg_l = melt(forecast_agg, id.vars=c("scenario", "year"))
-ggplot(subset(forecast_agg_l, variable=="conflict"), aes(x=year,y=value,group=variable,color=variable)) +
-  geom_line() +
-  facet_grid(scenario ~.)
+ggplot(subset(forecast_agg_l, variable=="climate_disasters"), aes(x=year,y=value,group=scenario,color=scenario)) +
+  geom_line()
 
 ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenario)) +
   scale_y_continuous(labels=dollar) +
