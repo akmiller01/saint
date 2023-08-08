@@ -8,9 +8,14 @@ setwd(paste0(wd_base, "saint"))
 
 forecast = fread("outputs/binary_conflict_clim_bigram_forecast.csv")
 forecast$y_prob = forecast$y_hat
-forecast$y_hat = round(forecast$y_prob)
+forecast$y_hat = forecast$y_prob
+
+historical = subset(forecast, year<2014)
+historical = historical[,c("scenario", "iso3", "year", "y_hat")]
+historical_w = dcast(historical, iso3+year~scenario, value.var="y_hat")
 
 groupings = read.xlsx("~/git/humanitarian-ssp-projections/WB/CLASS.xlsx")
+groupings$Code[which(groupings$Code=="XKX")] = "XXK"
 names(groupings) = c(
   "country.name",
   "iso3",

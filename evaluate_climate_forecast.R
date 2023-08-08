@@ -13,6 +13,7 @@ forecast = fread("outputs/regression_climate_worldclim_forecast.csv")
 # forecast$year = sapply(scenario_split, `[[`, 3)
 
 groupings = read.xlsx("~/git/humanitarian-ssp-projections/WB/CLASS.xlsx")
+groupings$Code[which(groupings$Code=="XKX")] = "XXK"
 names(groupings) = c(
   "country.name",
   "iso3",
@@ -26,29 +27,26 @@ forecast = merge(forecast, groupings, by="iso3", all.x=T)
 forecast$climate_disasters[which(forecast$year>=2013)] = forecast$y_hat[which(forecast$year>=2013)]
 forecast$climate_disasters[which(forecast$climate_disasters<0)] = 0
 
-forecast_agg_scen = subset(forecast,year>=2013)[,.(
-  climate_disasters=sum(climate_disasters, na.rm=T),
-  prec_1=mean(prec_1, na.rm=T),
-  tmax_1=mean(tmax_1, na.rm=T)
-), by=.(scenario)]
-ggplot(forecast_agg_scen, aes(x=scenario,y=climate_disasters,fill=scenario)) +
-  scale_y_continuous() +
-  geom_bar(stat="identity", position="dodge") +
-  theme_classic()
-
 forecast_agg = forecast[,.(
   climate_disasters=sum(climate_disasters, na.rm=T),
   prec_1=mean(prec_1, na.rm=T),
   tmax_1=mean(tmax_1, na.rm=T)
 ), by=.(scenario, year)]
-forecast_agg_l = melt(forecast_agg, id.vars=c("scenario", "year"))
-ggplot(forecast_agg_l, aes(x=year,y=value,group=variable,color=variable)) +
-  geom_line() +
-  facet_grid(scenario ~.)
 
 ggplot(forecast_agg, aes(x=year,y=climate_disasters,group=scenario,color=scenario)) +
   scale_y_continuous() +
   geom_line() +
   theme_classic() +
   labs(x="Year", y="Total global climate disasters")
+
+forecast_agg_region = forecast[,.(
+  climate_disasters=sum(climate_disasters, na.rm=T)
+), by=.(scenario, year, region)]
+
+ggplot(forecast_agg_region, aes(x=year,y=climate_disasters,group=region,fill=region)) +
+  scale_y_continuous(labels=label_comma()) +
+  geom_area(stat="identity") +
+  facet_grid(scenario ~ .) +
+  theme_classic() +
+  labs(x="Year", y="Global climate disasters")
 

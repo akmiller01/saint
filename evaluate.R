@@ -270,8 +270,8 @@ print(
   )
 )
 
-# $ python train.py --dset_id conflict_clim --task binary
-# $ python sample.py --dset_id conflict_clim --task binary
+# $ python train.py --dset_id conflict_clim_bigram --task binary
+# $ python sample.py --dset_id conflict_clim_bigram --task binary
 saint = fread("~/git/saint/outputs/binary_conflict_clim_bigram.csv")
 saint$y_prob = saint$y_hat
 saint$y_hat = round(saint$y_prob)
@@ -322,7 +322,7 @@ ols_data$tmax = pmax(
 )
 fit = glm(
   conflict~
-    gdpgrowth+prec+tmax,
+    GDPcap+prec+tmax,
   data=ols_data, family="binomial"
 )
 summary(fit)
@@ -367,7 +367,7 @@ forecast$y_hat = round(forecast$y_prob)
 forecast$conflict[which(forecast$year>=2014)] = forecast$y_hat[which(forecast$year>=2014)]
 forecast_agg = forecast[,.(
   conflicts=sum(y_hat, na.rm=T),
-  gdpgrowth = mean(gdpgrowth, na.rm=T)
+  GDPcap = mean(GDPcap, na.rm=T)
 ), by=.(scenario, year)]
 library(scales)
 ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
@@ -504,7 +504,7 @@ ols_data$tmax = pmax(
 )
 ols = lm(
   climate_disasters~
-  prec+tmax,
+  area_sqkm+prec+tmax,
   data=ols_data
 )
 summary(ols)
@@ -614,7 +614,7 @@ forecast_agg = data.table(forecast)[,.(
   climate_disasters=sum(climate_disasters, na.rm=T),
   conflict=sum(conflict, na.rm=T)
 ), by=.(scenario, year)]
-ggplot(subset(forecast_agg, year>2025), aes(x=year,y=humanitarian_needs,group=scenario,color=scenario)) +
+ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenario)) +
   scale_y_continuous(labels=dollar) +
   geom_line() +
   theme_classic() +
