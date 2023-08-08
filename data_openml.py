@@ -41,7 +41,7 @@ def data_split(X,y,nan_mask,indices):
     return x_d, y_d
 
 
-def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2], forecasting=False):
+def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2], forecasting=False, country_fe=True, year_fe=False):
     
     np.random.seed(seed)
     try:
@@ -51,6 +51,10 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2], forecasting=Fa
         X, y, categorical_indicator, attribute_names = dataset.get_data(dataset_format="dataframe", target=dataset.default_target_attribute)
     except ValueError:
         dataset = pd.read_csv(os.path.join("data", "{}.csv".format(ds_id)))
+        if not country_fe:
+            dataset.pop('iso3')
+        if not year_fe:
+            dataset.pop('year')
 
         y = dataset.pop(dataset.columns[0])
         X = dataset
@@ -65,6 +69,10 @@ def data_prep_openml(ds_id, seed, task, datasplit=[.65, .15, .2], forecasting=Fa
 
         if forecasting:
             forecast_dataset = pd.read_csv(os.path.join("data", "{}_forecasting.csv".format(ds_id)))
+            if not country_fe:
+                forecast_dataset.pop('iso3')
+            if not year_fe:
+                forecast_dataset.pop('year')
             y_forecast = forecast_dataset.pop(forecast_dataset.columns[0])
             forecast_categories = forecast_dataset.pop(forecast_dataset.columns[0])
             X_forecast = forecast_dataset

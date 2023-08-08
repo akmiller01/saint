@@ -377,9 +377,9 @@ ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
   labs(x="Year", y="Global conflicts")
 
 
-# $ python train.py --dset_id displacement_worldclim_nofe --task regression
-# $ python sample.py --dset_id displacement_worldclim_nofe --task regression
-saint = fread("~/git/saint/outputs/regression_displacement_worldclim_nofe.csv")
+# $ python train.py --dset_id displacement_worldclim --task regression
+# $ python sample.py --dset_id displacement_worldclim --task regression
+saint = fread("~/git/saint/outputs/regression_displacement_worldclim.csv")
 (sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
 plot(saint)
 summary(lm(y~y_hat, data=saint))
