@@ -25,7 +25,7 @@ forecast = merge(forecast, groupings, by="iso3", all.x=T)
 
 forecast$humanitarian_needs[which(forecast$year>=2023)] = forecast$y_hat[which(forecast$year>=2023)]
 forecast$humanitarian_needs[which(forecast$humanitarian_needs<0)] = 0
-forecast$humanitarian_needs = forecast$humanitarian_needs / 1e6
+forecast$humanitarian_needs = forecast$humanitarian_needs / 1e9
 
 forecast_agg = forecast[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
@@ -38,4 +38,4 @@ ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenar
   scale_y_continuous(labels=dollar) +
   geom_line() +
   theme_classic() +
-  labs(x="Year", y="Humanitarian needs (millions USD$)")
+  labs(x="Year", y="Humanitarian spend per donor (billions USD$)")

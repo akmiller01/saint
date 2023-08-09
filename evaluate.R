@@ -566,7 +566,7 @@ ols_data <- ols_data %>%
     hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
   )
 ols = lm(humanitarian_needs~
-           hum_t1+
+           # hum_t1+
            displaced_persons+
            climate_disasters+
            conflict
@@ -575,24 +575,25 @@ ols = lm(humanitarian_needs~
 summary(ols)
 forecast = fread("~/git/saint/data/tripartite_bigram_forecasting.csv")
 forecast = forecast[order(forecast$scenario, forecast$iso3, forecast$year),]
-forecast <- forecast %>%                           
-  group_by(iso3) %>%
-  dplyr::mutate(
-    hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
-  )
-
-pb = txtProgressBar(min=2023, max=2100, style=3)
-for(year in c(2023:2100)){
-  setTxtProgressBar(pb, year)
-  forecast$humanitarian_needs[which(forecast$year==year)] =
-    predict.lm(ols, newdata = forecast[which(forecast$year==year),])
-  forecast <- forecast %>%                           
-    group_by(iso3) %>%
-    dplyr::mutate(
-      hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
-    )
-}
-close(pb)
+# forecast <- forecast %>%                           
+#   group_by(iso3) %>%
+#   dplyr::mutate(
+#     hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
+#   )
+# 
+# pb = txtProgressBar(min=2023, max=2100, style=3)
+# for(year in c(2023:2100)){
+#   setTxtProgressBar(pb, year)
+#   forecast$humanitarian_needs[which(forecast$year==year)] =
+#     predict.lm(ols, newdata = forecast[which(forecast$year==year),])
+#   forecast <- forecast %>%                           
+#     group_by(iso3) %>%
+#     dplyr::mutate(
+#       hum_t1 = lag(humanitarian_needs, n = 1, default = 0)
+#     )
+# }
+# close(pb)
+forecast$humanitarian_needs[which(forecast$year > 2022)] = predict.lm(ols, newdata=forecast[which(forecast$year > 2022)])
 
 forecast$humanitarian_needs = forecast$humanitarian_needs / 1e9
 forecast_sub = subset(forecast, year > 2022 & year < 2101)
@@ -618,4 +619,4 @@ ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenar
   scale_y_continuous(labels=dollar) +
   geom_line() +
   theme_classic() +
-  labs(x="Year", y="Humanitarian needs (billion USD$)")
+  labs(x="Year", y="Humanitarian spend per donor (billion USD$)")
