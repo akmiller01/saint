@@ -622,3 +622,56 @@ ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenar
   geom_line() +
   theme_classic() +
   labs(x="Year", y="People in need (% of baseline)")
+
+fts = fread("~/git/humanitarian-ssp-projections/fts/hum_reqs.csv")
+fts = subset(fts, type!="Regional response plan")
+keep = c("iso3", "year", "Total current requirements:")
+fts = fts[,keep, with=F]
+setnames(fts, "Total current requirements:", "humanitarian_needs")
+fts$humanitarian_needs = as.numeric(fts$humanitarian_needs)
+rrps = fread("~/git/humanitarian-ssp-projections/fts/hum_reqs_rrps.csv")
+keep = c("iso3", "year", "Current reqs.")
+rrps = rrps[,keep,with=F]
+setnames(rrps, "Current reqs.", "humanitarian_needs")
+rrps$humanitarian_needs = as.numeric(gsub(",","",rrps$humanitarian_needs))
+fts = rbind(fts, rrps)
+fts = subset(fts, nchar(iso3) == 3 & !is.na(humanitarian_needs))
+fts_aggregate = fts[,.(humanitarian_needs=sum(humanitarian_needs)),by=.(iso3, year)]
+
+setnames(ols_data, "humanitarian_needs", "pin")
+ols_data = merge(ols_data, fts_aggregate, by=c("iso3", "year"))
+ols = lm(humanitarian_needs~
+           # hum_t1+
+           pin
+         , data=ols_data
+)
+summary(ols)
+setnames(forecast, "humanitarian_needs", "pin")
+forecast$humanitarian_needs = predict.lm(ols, newdata=forecast)
+forecast_agg = data.table(forecast)[,.(
+  humanitarian_needs=sum(humanitarian_needs, na.rm=T),
+  pin=sum(pin, na.rm=T),
+  displaced_persons=sum(displaced_persons, na.rm=T),
+  climate_disasters=sum(climate_disasters, na.rm=T),
+  conflict=sum(conflict, na.rm=T)
+), by=.(scenario, year)]
+forecast_agg$humanitarian_needs = forecast_agg$humanitarian_needs / 1e9
+ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenario)) +
+  scale_y_continuous(labels=dollar) +
+  geom_line() +
+  theme_classic() +
+  labs(x="Year", y="Humanitarian needs (billions USD)")
+forecast_sub = subset(forecast, year > 2023)
+forecast_agg = data.table(forecast_sub)[,.(
+  humanitarian_needs=sum(humanitarian_needs, na.rm=T),
+  pin=sum(pin, na.rm=T),
+  displaced_persons=sum(displaced_persons, na.rm=T),
+  conflict=sum(conflict, na.rm=T)
+), by=.(scenario)]
+forecast_agg$humanitarian_needs = forecast_agg$humanitarian_needs / 1e9
+ggplot(forecast_agg, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
+  scale_y_continuous(labels=dollar) +
+  geom_bar(stat="identity", position="dodge") +
+  theme_classic() +
+  labs(x="SSP Scenario", y="Humanitarian needs (billions USD)",
+       title="Projected global humanitarian needs (2024-2100)")
