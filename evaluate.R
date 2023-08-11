@@ -593,10 +593,10 @@ forecast = forecast[order(forecast$scenario, forecast$iso3, forecast$year),]
 #     )
 # }
 # close(pb)
-forecast$humanitarian_needs[which(forecast$year > 2022)] = predict.lm(ols, newdata=forecast[which(forecast$year > 2022)])
+forecast$humanitarian_needs = predict.lm(ols, newdata=forecast)
 
-forecast$humanitarian_needs = forecast$humanitarian_needs / 1e9
-forecast_sub = subset(forecast, year > 2022 & year < 2101)
+forecast$humanitarian_needs = forecast$humanitarian_needs
+forecast_sub = subset(forecast, year > 2023 & year < 2101)
 forecast_agg = data.table(forecast_sub)[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
@@ -604,19 +604,21 @@ forecast_agg = data.table(forecast_sub)[,.(
 ), by=.(scenario)]
 library(scales)
 ggplot(forecast_agg, aes(x=scenario,y=humanitarian_needs,fill=scenario)) +
-  scale_y_continuous(labels=dollar) +
+  scale_y_continuous(labels=label_comma()) +
   geom_bar(stat="identity", position="dodge") +
   theme_classic() +
-  labs(x="SSP Scenario", y="Humanitarian needs (billion USD$)",
-       title="Projected global humanitarian needs (2023-2100)")
+  labs(x="SSP Scenario", y="People in need (millions)",
+       title="Projected global people in humanitarian need (2024-2100)")
 forecast_agg = data.table(forecast)[,.(
   humanitarian_needs=sum(humanitarian_needs, na.rm=T),
   displaced_persons=sum(displaced_persons, na.rm=T),
   climate_disasters=sum(climate_disasters, na.rm=T),
   conflict=sum(conflict, na.rm=T)
 ), by=.(scenario, year)]
+forecast_agg_baseline = forecast_agg$humanitarian_needs[which.min(forecast_agg$humanitarian_needs)]
+forecast_agg$humanitarian_needs = forecast_agg$humanitarian_needs / forecast_agg_baseline
 ggplot(forecast_agg, aes(x=year,y=humanitarian_needs,group=scenario,color=scenario)) +
-  scale_y_continuous(labels=dollar) +
+  scale_y_continuous(labels=percent) +
   geom_line() +
   theme_classic() +
-  labs(x="Year", y="Humanitarian spend per donor (billion USD$)")
+  labs(x="Year", y="People in need (% of baseline)")
