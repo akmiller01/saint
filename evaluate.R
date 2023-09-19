@@ -149,8 +149,7 @@ print(
 )
 forecast$conflict[which(forecast$year>=2014)] = forecast$y_hat[which(forecast$year>=2014)]
 forecast_agg = forecast[,.(
-  conflicts=sum(y_hat, na.rm=T),
-  GDPcap = mean(GDPcap, na.rm=T)
+  conflicts=sum(y_hat, na.rm=T)
 ), by=.(scenario, year)]
 library(scales)
 ggplot(forecast_agg, aes(x=year,y=conflicts,group=scenario,color=scenario)) +
@@ -282,6 +281,81 @@ ggplot(forecast_agg, aes(x=year,y=displaced_persons,group=scenario,color=scenari
   labs(x="Year", y="Displaced persons")
 
 
+# $ python train.py --dset_id displacement_worldclim2 --task regression --embedding_size=8 --epochs=1000
+# $ python sample.py --dset_id displacement_worldclim2 --task regression --embedding_size=8 --epochs=1000
+saint = fread("~/git/saint/outputs/regression_displacement_worldclim2.csv")
+(sum(saint$y_hat)-sum(saint$y))/sum(saint$y)
+plot(saint)
+summary(lm(y~y_hat, data=saint))
+ols_data = fread("~/git/saint/data/displacement_worldclim2.csv")
+ols_data$prec = rowSums(
+  ols_data[,c(
+    "prec_1",
+    "prec_2",
+    "prec_3",
+    "prec_4",
+    "prec_5",
+    "prec_6",
+    "prec_7",
+    "prec_8",
+    "prec_9",
+    "prec_10",
+    "prec_11",
+    "prec_12"
+  )]
+)
+ols_data$tmax = pmax(
+  ols_data$tmax_1,
+  ols_data$tmax_2,
+  ols_data$tmax_3,
+  ols_data$tmax_4,
+  ols_data$tmax_5,
+  ols_data$tmax_6,
+  ols_data$tmax_7,
+  ols_data$tmax_8,
+  ols_data$tmax_9,
+  ols_data$tmax_10,
+  ols_data$tmax_11,
+  ols_data$tmax_12
+)
+ols_simple = lm(
+  displaced_persons~
+    prec+tmax,
+  data=ols_data
+)
+summary(ols_simple)
+ols = lm(
+  displaced_persons~
+    prec_1+
+    prec_2+
+    prec_3+
+    prec_4+
+    prec_5+
+    prec_6+
+    prec_7+
+    prec_8+
+    prec_9+
+    prec_10+
+    prec_11+
+    prec_12+
+    tmax_1+
+    tmax_2+
+    tmax_3+
+    tmax_4+
+    tmax_5+
+    tmax_6+
+    tmax_7+
+    tmax_8+
+    tmax_9+
+    tmax_10+
+    tmax_11+
+    tmax_12+
+    iso3,
+  data=ols_data
+)
+summary(ols)
+
+
 # $ python train.py --dset_id climate_worldclim --task regression
 # $ python sample.py --dset_id climate_worldclim --task regression
 saint = fread("~/git/saint/outputs/regression_climate_worldclim.csv")
@@ -320,13 +394,13 @@ ols_data$tmax = pmax(
   ols_data$tmax_12
 )
 ols_simple = lm(
-  climate_disasters~
+  max_affected~
     prec+tmax,
   data=ols_data
 )
 summary(ols_simple)
 ols = lm(
-  climate_disasters~
+  max_affected~
     prec_1+
     prec_2+
     prec_3+
