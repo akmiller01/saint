@@ -94,14 +94,20 @@ print(opt)
 
 if opt.active_log:
     wandb.config.update(opt)
+
+if device == 'cpu':
+    num_workers = 4
+else:
+    num_workers = 2
+
 train_ds = DataSetCatCon(X_train, y_train, cat_idxs,opt.dtask,continuous_mean_std)
-trainloader = DataLoader(train_ds, batch_size=opt.batchsize, shuffle=True,num_workers=4)
+trainloader = DataLoader(train_ds, batch_size=opt.batchsize, shuffle=True,num_workers=num_workers)
 
 valid_ds = DataSetCatCon(X_valid, y_valid, cat_idxs,opt.dtask, continuous_mean_std)
-validloader = DataLoader(valid_ds, batch_size=opt.batchsize, shuffle=False,num_workers=4)
+validloader = DataLoader(valid_ds, batch_size=opt.batchsize, shuffle=False,num_workers=num_workers)
 
 test_ds = DataSetCatCon(X_test, y_test, cat_idxs,opt.dtask, continuous_mean_std)
-testloader = DataLoader(test_ds, batch_size=opt.batchsize, shuffle=False,num_workers=4)
+testloader = DataLoader(test_ds, batch_size=opt.batchsize, shuffle=False,num_workers=num_workers)
 if opt.task == 'regression':
     y_dim = 1
 else:

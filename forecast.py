@@ -93,10 +93,15 @@ _,nfeat = X_train['data'].shape
 print(nfeat,opt.batchsize)
 print(opt)
 
+if device == 'cpu':
+    num_workers = 4
+else:
+    num_workers = 2
+
 if opt.active_log:
     wandb.config.update(opt)
 forecast_ds = DataSetCatCon(X_forecast, y_forecast, cat_idxs,opt.dtask,continuous_mean_std)
-forecast_loader = DataLoader(forecast_ds, batch_size=opt.batchsize, shuffle=False,num_workers=4)
+forecast_loader = DataLoader(forecast_ds, batch_size=opt.batchsize, shuffle=False,num_workers=num_workers)
 
 if opt.task == 'regression':
     y_dim = 1
